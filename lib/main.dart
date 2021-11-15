@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,8 +32,35 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _textController = TextEditingController();
 
-  void _handleLaunch(String text) {
-    _textController.clear();
+  static const key = "key";
+
+  void _handleLaunch(String text) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString(key, text);
+      _textController.text = text;
+      FocusScope.of(context).unfocus();
+    });
+  }
+
+  void _loadKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      String savedKey = prefs.getString(key) ?? "";
+      _textController.text = savedKey;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadKey();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _textController.dispose();
   }
 
   @override
