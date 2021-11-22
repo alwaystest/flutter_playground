@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'weather_page.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -15,7 +17,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Welcome aboard'),
+      routes: {
+        "/": (context) => const MyHomePage(title: 'Welcome aboard'),
+        "/weather": (context) => const WeatherPage()
+      },
+      initialRoute: "/",
     );
   }
 }
@@ -40,15 +46,24 @@ class _MyHomePageState extends State<MyHomePage> {
       prefs.setString(key, text);
       _textController.text = text;
       FocusScope.of(context).unfocus();
+      _enterLandingPage();
     });
+  }
+
+  void _enterLandingPage() {
+    Navigator.pushReplacementNamed(context, "/weather");
   }
 
   void _loadKey() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      String savedKey = prefs.getString(key) ?? "";
-      _textController.text = savedKey;
-    });
+    String savedKey = prefs.getString(key) ?? "";
+    if (savedKey.isNotEmpty) {
+      _enterLandingPage();
+    } else {
+      setState(() {
+        _textController.text = savedKey;
+      });
+    }
   }
 
   @override
@@ -79,8 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   controller: _textController,
                   onSubmitted: _handleLaunch,
                   textAlign: TextAlign.center,
-                  decoration: const InputDecoration.collapsed(
-                      hintText: 'Enter your token'),
+                  decoration: const InputDecoration.collapsed(hintText: 'Enter your token'),
                 ))
           ],
         ),
